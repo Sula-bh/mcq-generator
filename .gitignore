@@ -1,3 +1,5 @@
 .vscode/
 env/
-*.egg-info/ 
+*.egg-info/
+.env
+*.csv
