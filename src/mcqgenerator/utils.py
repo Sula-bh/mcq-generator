@@ -1,29 +1,37 @@
 import PyPDF2
-import traceback
+from mcqgenerator.logger import logging
 
 
 def read_file(file):
-    if file.name.endswith(".pdf"):
-        try:
+    try:
+        logging.info(f"Reading file: {file.name}")
+
+        if file.name.endswith(".pdf"):
             pdf_reader=PyPDF2.PdfReader(file)
             text=""
             for page in pdf_reader.pages:
                 text+=page.extract_text()
+            logging.info("PDF file read successfully")
             return text
             
-        except Exception as e:
-            raise Exception("error reading the PDF file")
+        elif file.name.endswith(".txt"):
+            content = file.read().decode("utf-8")
+            logging.info("TXT file read successfully")
+            return content
         
-    elif file.name.endswith(".txt"):
-        return file.read().decode("utf-8")
-    
-    else:
-        raise Exception(
-            "unsupported file format only pdf and text file suppoted"
-            )
+        else:
+            logging.error("Unsupported file format")
+            raise Exception(
+                "unsupported file format only pdf and text file suppoted"
+                )
+        
+    except Exception as e:
+            logging.error("Error reading file", exc_info=True)
+        
 
 def get_table_data(quiz_dict):
     try:
+        logging.info("Converting quiz dictionary to table format")
         quiz_table_data=[]
         
         for key,value in quiz_dict.items():
@@ -38,9 +46,10 @@ def get_table_data(quiz_dict):
             correct=value["correct"]
             quiz_table_data.append({"MCQ": mcq,"Choices": options, "Correct": correct})
         
+        logging.info("Successfully created table data")
         return quiz_table_data
         
     except Exception as e:
-        traceback.print_exception(type(e), e, e.__traceback__)
+        logging.error("Error while converting quiz to table data", exc_info=True)
         return None
 

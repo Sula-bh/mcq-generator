@@ -4,15 +4,23 @@ import certifi
 os.environ["SSL_CERT_FILE"] = certifi.where()
 
 import json
-import traceback
 import pandas as pd
-from mcqgenerator.utils import read_file, get_table_data
 import streamlit as st
+
+from mcqgenerator.utils import read_file, get_table_data
 from mcqgenerator.mcq_generator import generate_evaluate_chain
 from mcqgenerator.logger import logging
 
-with open(r'.\response.json', 'r') as file:
-    RESPONSE_JSON = json.load(file)
+logging.info("MCQ Generator App started")
+
+try:
+    with open(r'.\response.json', 'r') as file:
+        RESPONSE_JSON = json.load(file)
+    logging.info("Loaded response.json successfully")
+except Exception as e:
+    logging.error("Failed to load response.json", exc_info=True)
+    st.error("Error loading response template")
+    st.stop()
 
 st.title("MCQs Generator Application with LangChain 🦜⛓️")
 
@@ -21,7 +29,7 @@ with st.form("user_inputs"):
 
     mcq_count=st.number_input("No. of MCQs", min_value=3, max_value=50)
 
-    subject=st.text_input("Insert Subject",max_chars=20)
+    subject=st.text_input("Insert Subject",max_chars=50)
 
     tone=st.text_input("Complexity Level Of Questions", max_chars=20, placeholder="Simple")
 
@@ -30,7 +38,13 @@ with st.form("user_inputs"):
     if button and uploaded_file is not None and mcq_count and subject and tone:
         with st.spinner("Loading..."):
             try:
+                logging.info(f"File uploaded: {uploaded_file.name}")
+                logging.info(f"MCQ count: {mcq_count}, Subject: {subject}, Tone: {tone}")
+
                 text=read_file(uploaded_file)
+                logging.info("File read successfully")
+
+                logging.info("Invoking generate_evaluate_chain")
                 response = generate_evaluate_chain.invoke({
                     "text": text,
                     "number": mcq_count,
@@ -38,13 +52,16 @@ with st.form("user_inputs"):
                     "tone": tone,
                     "response_json": json.dumps(RESPONSE_JSON)
                 })
+                logging.info("Chain executed successfully")
 
             except Exception as e:
-                traceback.print_exception(type(e), e, e.__traceback__)
-                st.error("Error")
+                logging.error("Error during MCQ generation", exc_info=True)
+                st.error("Error occurred while generating MCQs")
 
             else:
                 usage = response["raw"].usage_metadata
+                logging.info(f"Token usage: {usage}")
+
                 print("Prompt Tokens:", usage.get("input_tokens"))
                 print("Completion Tokens:", usage.get("output_tokens"))
                 print("Total Tokens:", usage.get("total_tokens"))
@@ -57,7 +74,10 @@ with st.form("user_inputs"):
                             df=pd.DataFrame(table_data)
                             df.index+=1
                             st.dataframe(df)
+                            logging.info("Displayed MCQ table successfully")
                         else:
+                            logging.error("Parsed response is None")
                             st.error("Error in the table data")
                 else:
+                    logging.warning("Response is not a dict")
                     st.write(response)

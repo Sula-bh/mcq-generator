@@ -1,6 +1,4 @@
 import os
-import json
-import pandas as pd
 from dotenv import load_dotenv
 from mcqgenerator.logger import logging
 
@@ -13,6 +11,12 @@ from langchain_core.globals import set_verbose
 load_dotenv()
 KEY=os.getenv("GOOGLE_API_KEY")
 
+if not KEY:
+    logging.error("GOOGLE_API_KEY not found")
+else:
+    logging.info("GOOGLE_API_KEY loaded successfully")
+
+logging.info("Initializing Gemini model")
 llm = ChatGoogleGenerativeAI(google_api_key=KEY, model="gemini-2.5-flash", temperature=0.3, max_output_tokens=2048)
 
 TEMPLATE = """
@@ -63,5 +67,7 @@ generate_evaluate_chain=(
         "parsed": JsonOutputParser()
     }
 )
+
+logging.info("MCQ generation and evaluation chain created successfully")
 
 set_verbose(True)
