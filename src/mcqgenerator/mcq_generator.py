@@ -51,6 +51,9 @@ Your task:
 - Ensure correctness
 
 Return ONLY the corrected MCQs in the same format.
+Return ONLY valid JSON.
+Do NOT use markdown (no ```).
+Do NOT add explanation.
 """
 
 quiz_evaluation_prompt=PromptTemplate(input_variables=["subject", "quiz"], template=TEMPLATE2)
