@@ -7,6 +7,7 @@ from mcqgenerator.logger import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.globals import set_verbose
 
 load_dotenv()
@@ -57,6 +58,10 @@ generate_evaluate_chain=(
     }
     | quiz_evaluation_prompt
     | llm
+    | {
+        "raw": RunnablePassthrough(),   
+        "parsed": JsonOutputParser()
+    }
 )
 
 set_verbose(True)
