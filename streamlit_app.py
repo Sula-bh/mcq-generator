@@ -4,10 +4,9 @@ import certifi
 os.environ["SSL_CERT_FILE"] = certifi.where()
 
 import json
-import pandas as pd
 import streamlit as st
 
-from mcqgenerator.utils import read_file, get_table_data
+from mcqgenerator.utils import read_file
 from mcqgenerator.mcq_generator import generate_evaluate_chain
 from mcqgenerator.logger import logging
 
@@ -22,7 +21,7 @@ except Exception as e:
     st.error("Error loading response template")
     st.stop()
 
-st.title("MCQs Generator Application with LangChain 🦜⛓️")
+st.title("MCQs Generator Application")
 
 if 'clicked' not in st.session_state:
     st.session_state.clicked = False
@@ -41,7 +40,7 @@ with st.form("user_inputs"):
 
     subject=st.text_input("Insert Subject",max_chars=50)
 
-    tone=st.text_input("Complexity Level Of Questions", max_chars=20, placeholder="Simple")
+    tone=st.selectbox("Complexity Level Of Questions", ("Easy", "Medium", "Hard"))
 
     button=st.form_submit_button("Generate MCQs")
 
