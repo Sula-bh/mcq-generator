@@ -29,27 +29,3 @@ def read_file(file):
             logging.error("Error reading file", exc_info=True)
         
 
-def get_table_data(quiz_dict):
-    try:
-        logging.info("Converting quiz dictionary to table format")
-        quiz_table_data=[]
-        
-        for key,value in quiz_dict.items():
-            mcq=value["mcq"]
-            options=" || ".join(
-                [
-                    f"{option}-> {option_value}" for option, option_value in value["options"].items()
-                 
-                 ]
-            )
-            
-            correct=value["correct"]
-            quiz_table_data.append({"MCQ": mcq,"Choices": options, "Correct": correct})
-        
-        logging.info("Successfully created table data")
-        return quiz_table_data
-        
-    except Exception as e:
-        logging.error("Error while converting quiz to table data", exc_info=True)
-        return None
-
