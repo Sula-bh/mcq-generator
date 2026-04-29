@@ -26,6 +26,8 @@ create a quiz  of {number} multiple choice questions for {subject} students in {
 Make sure the questions are not repeated and check all the questions to be conforming the text as well.
 Make sure to format your response like  RESPONSE_JSON below  and use it as a guide. \
 Ensure to make {number} MCQs
+Do NOT use markdown (no ```).
+Do NOT use escape characters (like \\')
 ### RESPONSE_JSON
 {response_json}
 
@@ -52,7 +54,6 @@ Your task:
 
 Return ONLY the corrected MCQs in the same format.
 Return ONLY valid JSON.
-Do NOT use markdown (no ```).
 Do NOT add explanation.
 """
 
