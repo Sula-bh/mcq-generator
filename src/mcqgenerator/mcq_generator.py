@@ -17,15 +17,14 @@ else:
     logging.info("GOOGLE_API_KEY loaded successfully")
 
 logging.info("Initializing Gemini model")
-llm = ChatGoogleGenerativeAI(google_api_key=KEY, model="gemini-2.5-flash", temperature=0.3, max_output_tokens=2048)
+llm = ChatGoogleGenerativeAI(google_api_key=KEY, model="gemini-3.1-flash-lite-preview", temperature=0.3, max_output_tokens=2048)
 
-TEMPLATE = """
+GENERATE_TEMPLATE_WITH_TEXT = """
 Text:{text}
 You are an expert MCQ maker. Given the above text, it is your job to \
-create a quiz  of {number} multiple choice questions for {subject} students in {tone} tone. 
+create a quiz of {number} multiple choice questions with difficulty level: {tone}. 
 Make sure the questions are not repeated and check all the questions to be conforming the text as well.
 Make sure to format your response like  RESPONSE_JSON below  and use it as a guide. \
-Ensure to make {number} MCQs
 Do NOT use markdown (no ```).
 Do NOT use escape characters (like \\')
 ### RESPONSE_JSON
@@ -33,15 +32,37 @@ Do NOT use escape characters (like \\')
 
 """
 
-quiz_generation_prompt=PromptTemplate(
-    input_variables=["text", "number", "subject", "tone", "response_json"],
-    template=TEMPLATE
+quiz_generation_prompt_with_text=PromptTemplate(
+    input_variables=["text", "number", "tone", "response_json"],
+    template=GENERATE_TEMPLATE_WITH_TEXT
 )
 
-quiz_chain = quiz_generation_prompt | llm
+quiz_chain_with_text = quiz_generation_prompt_with_text | llm
 
-TEMPLATE2="""
-You are an expert {subject} teacher.
+GENERATE_TEMPLATE_WITH_SUBJECT = """
+You are an expert MCQ maker. Your job is to \
+create a quiz of {number} multiple choice questions for {subject} students with difficulty level: {tone}. 
+Cover different subtopics of {subject}.
+Include a mix of conceptual and factual questions.
+Ensure questions are clear and unambiguous.
+Make sure the questions are not repeated and make sure the questions are relevant to the subject.
+Make sure to format your response like  RESPONSE_JSON below  and use it as a guide. \
+Do NOT use markdown (no ```).
+Do NOT use escape characters (like \\')
+### RESPONSE_JSON
+{response_json}
+
+"""
+
+quiz_generation_prompt_with_subject=PromptTemplate(
+    input_variables=["number", "subject", "tone", "response_json"],
+    template=GENERATE_TEMPLATE_WITH_SUBJECT
+)
+
+quiz_chain_with_subject = quiz_generation_prompt_with_subject | llm
+
+EVALUATE_TEMPLATE="""
+You are an expert teacher reviewing MCQs for accuracy and clarity.
 
 Here is a quiz:
 {quiz}
@@ -57,13 +78,22 @@ Return ONLY valid JSON.
 Do NOT add explanation.
 """
 
-quiz_evaluation_prompt=PromptTemplate(input_variables=["subject", "quiz"], template=TEMPLATE2)
+quiz_evaluation_prompt=PromptTemplate(input_variables=["quiz"], template=EVALUATE_TEMPLATE)
 
-generate_evaluate_chain=(
-    {
-        "quiz": quiz_chain,                     
-        "subject": RunnablePassthrough()  
+generate_evaluate_chain_with_text=(
+    quiz_chain_with_text
+    | (lambda x: {"quiz": x.content})
+    | quiz_evaluation_prompt
+    | llm
+    | {
+        "raw": RunnablePassthrough(),   
+        "parsed": JsonOutputParser()
     }
+)
+
+generate_evaluate_chain_with_subject=(
+    quiz_chain_with_subject
+    | (lambda x: {"quiz": x.content})
     | quiz_evaluation_prompt
     | llm
     | {
