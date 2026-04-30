@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import streamlit as st
 from mcqgenerator.logger import logging
 
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -9,7 +10,7 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.globals import set_verbose
 
 load_dotenv()
-KEY=os.getenv("GOOGLE_API_KEY")
+KEY=st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
 if not KEY:
     logging.error("GOOGLE_API_KEY not found")
