@@ -12,8 +12,10 @@ from mcqgenerator.logger import logging
 
 logging.info("MCQ Generator App started")
 
+file_path = os.path.join(os.getcwd(), "response.json")
+
 try:
-    with open(r'.\response.json', 'r') as file:
+    with open(file_path, 'r') as file:
         RESPONSE_JSON = json.load(file)
     logging.info("Loaded response.json successfully")
 except Exception as e:
