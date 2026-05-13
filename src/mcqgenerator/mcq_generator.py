@@ -18,7 +18,7 @@ else:
     logging.info("GOOGLE_API_KEY loaded successfully")
 
 logging.info("Initializing Gemini model")
-llm = ChatGoogleGenerativeAI(google_api_key=KEY, model="gemini-3.1-flash-lite-preview", temperature=0.3, max_output_tokens=2048)
+llm = ChatGoogleGenerativeAI(google_api_key=KEY, model="gemini-3.1-flash-lite", temperature=0.3, max_output_tokens=2048)
 
 GENERATE_TEMPLATE_WITH_TEXT = """
 Text:{text}
